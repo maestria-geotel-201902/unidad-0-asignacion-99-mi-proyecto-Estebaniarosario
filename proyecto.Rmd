@@ -7,15 +7,12 @@ output:
     latex_engine: pdflatex
     template: svm-latex-ms.tex
     number_sections: true
-title: | 
-        | Mi proyecto
-        | Subtítulo
-        | Subtítulo
+title: Búsqueda de Hotspots  y Modelización del Analfabetismo en República Dominicana; Geo estadística de la precipitación del 2008
 author:
-- name: Tali tali tali
-  affiliation: Estudiante, Universidad Autónoma de Santo Domingo (UASD)
-abstract: "Mi resumen"
-keywords: "palabra clave 1, palabra clave 2"
+- affiliation: Maestrante, Universidad Autónoma de Santo Domingo (UASD)
+  name: Estebania de la Cruz del Rosario
+abstract: "En resumen, en esta investigación donde la  pregunta de Educación: “Sabe leer y escribir; no sabe leer ni escribir” en cuanto a la autocorrelación  según la comprobación de homocedasticidad, para la variable respecto de la coordenada Y, tanto grafico como la prueba de homocedasticidad, el resultado obtenido sugiere heterocedasticidad; pero respecto de X hay homocedasticidad. Y para el diagrama de moran plot San Rafael del Yuma tiene mucha más población que “no sabe leer ni escribir”, que lo que se esperaría de acuerdo a su entorno, eso se considera un outlayer espacial o un aberración espacial, El Mapa LISA Cliusters, nos muestra cuales son los grumos o aglomerados del valor alto de la variable, el valor alto de la variable es el porcentaje de persona que “no sabe leer ni escribir”, esa variable se comporta de la manera grumosa en 24  municipio, En 23 municipios pasa el efecto contrario estos municipios están autorrelacionado entre sí pero con bajo valor de la variable, Existen Dos grumos de bajo valor de las variables y tres grumos de alto valor de las variables. En el recto como no se parece entre sí, no hay una autocorrelacion espacial entre ellos, no hay una auotcorrelacion significativa. Duvergé  es un caso contrario, se esperaría un analfabetismo grande, pero se obtuvo un valor menor. Para el proceso de la Modelización el modelo con variable cuyo coeficientes resultaron significativo, la variable del porcentaje de persona que no sabe leer ni escribir, están asociadas con las variables: Edad en grupos quinquenales 0, 1-4,.... 85 y más: 60 - 64 y Tipo de vivienda: Barracón estos son directo y el Asiste o asistió a la escuela: No asiste, pero asistió e inverso porque el coeficiente es negativo. Para la Geoestadística de la Precipitación del año 2008, obtuvimos para representar el objeto stars, según el mapa las provincias donde se evidencian que hubo mayores precipitaciones son: Sánchez Ramírez, Monte Plata, María Trinidad Sánchez, Santo Domingo, Distrito Nacional San José de Ocoa, Hermanas Mirabal, San Cristóbal, Duarte, Semana, Barahona y Monseñor Noel."
+keywords: "Analfabestimo, Precipitación, Modelizacion Espacial"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
 fontfamily: mathpazo
@@ -28,31 +25,551 @@ header-includes:
   \usepackage{pdflscape}
   \newcommand{\blandscape}{\begin{landscape}}
   \newcommand{\elandscape}{\end{landscape}}
+editor_options: 
+  chunk_output_type: console
 ---
 
+# Introducción 
+  La siguiente investigación  de análisis espacial se realizara con el fin de dar a conocer la cantidad, estado, condiciones y ubicación, del analfabetismo en República Dominicana; además obtendremos los datos e informaciones, para esto vamos a trabajar con la pregunta “Sabe leer y escribir; No sabe leer ni escribir” según [@urenaevaluacion] del [@one2012censo], todo el trabajo se vas hacer en el programa de RStudio. R es un software  gratuito que está constituido por herramientas, se pueden ampliar por paquetes, librerías y define funciones, R es un código abierto que nos permite ahorrar económicamente ya que es un software libre, no es  pirateado, esto es según  QUÉ ES R  .Nuestra finalidad en esta investigación del analfabetismo es aplicar  las múltiples formulaciones y medidas de Autocorrelación espacial e indicar cómo el concepto ayuda a determinar la naturaleza espacial de los datos georreferenciados,  vamos a trabajar con código, además de cargar paquete, todo esto paquete deben estar cargado en R estudio, segun [@bivand2008applied]. La Modelización de Datos Espaciales, es una asociación, aquí vamos a cargar una serie de librería como son: library(tidyverse), library(sf), library(spdep) y la library(lmtest, libreriay variableusan (Tomislav Hengl, 2009). Además vamos a trabajar con Geoestadistica de la precipitación del año 2008, segun [@onamet2008precipitacion]. La Geoestadistica estudia fenómenos con relación espacial, aquí vamos a estudiar algunos de los  diferentes variogramas y cuál será el usado para nuestra investigación, sabiendo que los variogramas  sirven para pronosticar la interpolación espacial. [@hengl2009practical].
 
-# Introducción
-
-Preguntas de investigación o tema abordado.
-
+ 
 # Metodología
+La presente investigación busca conocer el analfabetismo de la diferente provincia según [@one2012censo] se hizo la siguiente pregunta “Sabe leer y escribir: No sabe leer ni escribir” es muy importantes, aquí utilizaremos el método de  observación para reconocer y apreciar el desarrollo del fenómeno que es objeto de estudio, es decir, nuestro problema de investigación. Vamos a cargar paquetes o librerías necesarias para que R estudio pueda obtener los datos y así tener mejor resultados, para esto aplicaremos tres técnicas: Los Hotspots,  Asociación  y Superficies  Continuas. Los Hotspots, es la Autocorrelacion Lisa Clirters (Moran), para evaluar autocorrelación se requiere conocer tanto los datos como los supuestos. En la Asociación está la Modelización de datos espaciales, las modelizaciones autorregresivas requieren considerar la autocorrelación espacial, puesto que, normalmente, las geometrías poligonales contienen observaciones que no son independientes entre sí, con lo cual se viola uno de los supuestos más importantes de la regresión. Las Superficies Continuas no son más que los Datos Puntuales, Geoestadistica,  Variogramas y Krigng, La geoestadística se ocupa en modelar, predecir y simular fenómenos espacialmente continuos; la Geoestadistica asiste en la predicción espacialmente continua del valor de una variable. Existen varias modalidades de krigeaje según los distintos supuestos (todas asumen que la variación espacial es modelizable mediante el variograma). El variograma es el gráfico de representación de estimaciones de la semivarianza, además R dispone de los modelos comunes de variograma. En esta Asociación de Modelización, las modelizaciones autorregresivas requieren considerar la autocorrelación espacial, puesto que, normalmente, las geometrías poligonales contienen observaciones que no son independientes entre sí, con lo cual se viola uno de los supuestos más importantes de la regresión tradicional.[@hengl2009practical]
+
 
 \ldots
 
 # Resultados
 
+## Autocorrelacion Espacial
+### Vecinos
+En el análisis de vecinos más cercanos, JUAN DE HERRERA  tiene un solo vecino y el que más tiene es la VEGA con 14 vecinos.
+
+### Analisis Exploratorio de Datos
+Segun el anilis exploratorio de los datos podemos ver en el mapa de la variable original que hay 54 municipios con aproximadamente 15%  de personas que no saben leer ni escribir, 42 con un aproximado de 20% de personas que no sabe leer ni escribir, 34 municipios con un aproximado de 24% de personas que no sabe leer ni escribir, 20 municipios de aproximadamente 29% de personas que no sabe leer ni escribir y 6 de los municipios tiene un 37% con un alto porcentaje que no sabe leer ni escribir.
+
+En el análisis exploratorio de los datos podemos ver en el mapa de la variable logarítmica que hay 24 municipios con aproximadamente 3% de personas que no saben leer ni escribir, 51 municipios con un aproximado de 3% de personas que no sabe leer ni escribir, 48 municipios con un aproximado de 3% de personas que no sabe leer ni escribir, 27 municipios con aproximadamente 3% de las personas no sabe leer ni escribir y 5 municipios de aproximadamente 4% de las personas no sabe leer ni escribir.
+
+### Diagrama Cuantilar Normal
+Según el diagrama cuantilar normal, la gráfica logarítmica presenta más normalidad en los datos, ya que se asemeja más a una línea reta.
+
+### Prueba de Shapiro-Wilk
+Para la prueba de Shapiro-Wilk al menos los datos transformados, sí cumplen en principio, con el supuesto de normalidad.
+
+### Comprobacion de Homocedasticidad
+Según la comprobación de homocedasticidad, para la variable respecto de la coordenada Y, tanto grafico como la prueba de homocedasticidad, el resultado obtenido sugiere heterocedasticidad. Pero respecto de X hay homocedasticidad.
+
+### Evaluar la Autocorrelacion Espacial Global
+En esta investigación se rechaza la hipótesis nula, porque el coeficiente de significancia es menor que 0.05.
+
+### Prueba de I Moran Local
+En el diagrama de Moran Plot San Rafael del Yuma, tiene un valor de la variable en el eje X de 3.2,  en el eje Y de acuerdo a su vecindad se esperaría de 2.8, San Rafael del Yuma tiene mucha más población que no sabe leer ni escribir, que lo que se esperaría de acuerdo a su entorno, eso se considera un outlayer espacial o un aberración espacial. En San Rafael del Yuma se observó un valor grande, pero se  espera un valor más pequeño.  Duvergé  es un caso contrario, se obtiene un valor de la variable de 2.9, pero de acuerdo a su vecindad, Duvergé se  esperaría es 3.4, se esperaría un analfabetismo grande, pero se obtuvo un valor menor.
+
+### Generacion de Mapa LISA
+El Mapa LISA Cliusters, nos muestra cuales son los grumos o aglomerados del valor alto de la variable, el valor alto de la variable es el porcentaje de persona que no sabe leer ni escribir, esa variable se comporta de la manera grumosa en 24  municipio, entre estos están: la región Enriquillo en una parte de ella y en esos  municipio y en algunos municipios de la región fronteriza y  también al norte de la provincia de Azua, eso son los aglomerados donde los municipios de ese  grumo se parecen a su entorno en cuanto a esa variable, es decir Pedernales se parece a Oviedo, Oviedo se parece a Paraíso, entre sí en cuanto al valor de la variable, es decir están autocorrelacionado espacialmente en cuanto a esa variable. En 23 municipios pasa el efecto contrario estos municipios están autorrelacionado entre sí pero con bajo valor de la variable, la variable tiene un bajo valor en Santo Domingo, San Cristóbal, Santo Domingo Norte, entre otros. Existen Dos grumos de bajo valor de las variables y tres grumos de alto valor de las variables. En el recto como no se parece entre sí, no hay una autocorrelacion espacial entre ellos, no hay una auotcorrelacion significativa y por eso se ponen todos de color gris.
+
+## Modelización de datos espaciales
+### Modelo Espacial Autorregresivo
+### Modelo con todas Variables
+En los casos de las variables, Tipo de vivienda: Barracón`, `Edad en grupos quinquenales 0, 1-4,.... 85 y más: 60 - 64`,`Asiste o asistió a la escuela: No asiste, pero asistió`, están asociada porque presentan coeficientes significativos y `Tipo de vivienda: Pieza en cuartería o parte atrás`, `Condición Actividad Económica: Trabajador(a) familiar o no familiar sin paga o ganancia`, no están asociado porque presentan coeficiente no significativo.
+
+### Modelo con Variables cuyo Coeficientes Resultaron Significativo
+Dentro del modelo con variable cuyo coeficientes resultaron significativo, la variable del porcentaje de persona que no sabe leer ni escribir, están asociadas con las variables: Edad en grupos quinquenales 0, 1-4,.... 85 y más: 60 - 64 y Tipo de vivienda: Barracón estos son directo y el Asiste o asistió a la escuela: No asiste, pero asistió e inverso porque el coeficiente es negativo. 
+ 
+## Geoestadistica de la Precipitacion del año 2008
+### EDA básico
+### Estadísticos Básicos para el año 2008
+Según los Estadísticos Básicos para el año 2008, la tabla tiene 25 fila, con un mínimo de 560.5 milímetros, con una media de 1513.5 milímetros y un máximo de 2376.0 milímetros y en al menos en 1 hay datos perdido (NA).
+
+### Histogramas Normal
+Según el histograma normal, los datos presentan una distribución normal.
+
+### Histogramas Logaritmica
+Según este histograma logarítmico, los datos tienen una distribución poco normal, porque para la derecha presenta la mayor cantidad de datos. 
+
+### Prueba de Shapiro-Wilk Normal
+ Según la prueba de Shapiro-Wilk Normal, el coeficiente significancia es mayor que 0.05 por tanto se acepta la hipótesis nula.
+ 
+### Prueba de Shapiro-Wilk Transformado
+Según la prueba de Shapiro-Wilk, en la variable logarítmica el coeficiente de significancia es mayor que 0.05 por tanto se acepta la  hipótesis nula, los datos vienen de una distribución normalmente distribuida
+
+## Representacion de la Precipitación del año 2008
+Los valore de máximas precipitación están en los pluviómetros centrales y que tienen acceso a en  los vientos alisios, las  provincias como: Sánchez Ramírez, Monte Plata, María Trinidad Sánchez, Santo Domingo, Distrito Nacional San José de Ocoa, Hermanas Mirabal, San Cristóbal, Duarte, Semana, Barahona en (Polo) y Monseñor Noel. Donde hubo mediana precipitación es el Seíbo, Hato Mayor, La Romana, La Altagracia, Pedernales, Puerto Plata, Elia Piña, San Juan, Santiago y Santiago Rodríguez. En las demás provincias se evidencia baja precipitación.
+
+### Variograma muestral
+###  Variograma modelo 2 (Exponencial)
+De acuerdo a la representación gráfica de los diferentes Variogramas, el modelo que mejor se ajusta a los datos es el modelo Exponencial. Por lo que este será el usado para el procesado de los datos.
+
+### Interpolación por Kriging Ordinario
+### Usar ggplot para representar el objeto stars.
+Según el mapa, las provincias donde se evidencian que hubieron mayores Precipitaciones son: Sánchez Ramírez, Monte Plata, María Trinidad Sánchez, Santo Domingo, Distrito Nacional San José de Ocoa, Hermanas Mirabal, San Cristóbal, Duarte, Semana, Barahona y Monseñor Noel. Donde hubo mediana precipitación es el Seíbo, Hato Mayor, La Romana, La Altagracia, Pedernales, Puerto Plata, Elia Piña, San Juan, Santiago y Santiago Rodríguez. En las demás provincias se evidencia baja precipitación.
+
 \ldots
 
 # Discusión o Conclusiones
+En esta investigación donde la variable “no sabe leer ni escribir”, en cuanto a  la autocorrelacion espacial, según En esta investigación donde la variable “no sabe leer ni escribir”, en cuanto a  la autocorrelacion espacial, según el diagrama de moran plot, se apreció  que  San Rafael del Yuma tiene más analfabetismo que lo que se esperaría, de acuerdo a su entorno; un caso contrario es Duverge, tiene  un valor de la variable menor, pero de acuerdo a su vecindad, lo que se  esperaría un alfabetismo grande. El LISA Cliusters muestra cuales son los grumos o aglomerados del valor de la variable, el valor de la variable es el Porcentaje de persona que no saben leer ni escribir, existen tres grumos de alto valor de la variable, esa variable se comporta de  manera grumosa en 24  municipio y dos grumos de bajo valor de la variable, en 23 municipios, en el recto como no se parecen entre sí, no hay una autocorrelacion espacial entre ellos, no hay una auotcorrelacion significativa. Para el proceso de la Modelización, el modelo con variable cuyo coeficientes resultaron significativo, la variable del porcentaje de persona que no sabe leer ni escribir, están asociadas con las variables: Edad en grupos quinquenales 0, 1-4,.... 85 y más: 60 - 64 y Tipo de vivienda: Barracón estos son directo y el Asiste o asistió a la escuela: No asiste, pero asistió e inverso porque el coeficiente es negativo. En cuanto a la Geoestadistica de la Precipitación del año 2008, según el mapa, las provincias donde se evidencian que hubieron mayores Precipitaciones son: Sánchez Ramírez, Monte Plata, María Trinidad Sánchez, Santo Domingo, Distrito Nacional San José de Ocoa, Hermanas Mirabal, San Cristóbal, Duarte, Semana, Barahona y Monseñor Noel. Concluyo diciendo que para  los datos de los  procesos de Autocorrelacion espacial  y la  Modelización de datos espaciales,  sugirieron  trabajar con la Transformada (logarítmica). En el proceso de Geoestadistica de la precipitación del año 2008, sugirieron trabajar  con los datos Originales.
 
 \ldots
 
 # Información de soporte
+Codigos, procedimientos de la clase de Vecindad, autocorrelacion espacial y  Modelización de datos espaciales del.
+Datos del censo del 2010 de la Oficina Nacional de Estadística -ONE-
+Datos de precipitacion del año 2008, de la Oficina Nacional de Meteorologia -ONAME-
+
+
 
 \ldots
 
 # *Script* reproducible
 
-\ldots
+## Librerias necesarias para los analisis 
+
+```{r, warning=FALSE, message=FALSE}
+library(spdep)
+library(tidyverse)
+library(sf)
+library(lmtest)#Necesario para la función bptest, que evalúa homocedasticidad
+library(tmap)
+library(RColorBrewer)
+library(knitr)
+library(stars)
+source("lisaclusters.R")
+library(gstat)
+library(ggplot2)
+```
+
+## Cargar datos
+
+* `Cargar los datos de la capas ONE del archivo "vivpersgeom_sf.RDS". Hay que determinar cómo se llama la capa ONE usando la función readRDS, asignándola al objeto `datosfuentes`,
+
+
+```{r}
+datosfuentes <- readRDS("vivpersgeom_sf.RDS")
+datosfuentes <- st_transform(x = datosfuentes, crs = 32619)
+datosfuentes.nb <- poly2nb(datosfuentes, queen=TRUE)
+attr(datosfuentes.nb, 'region.id') <- datosfuentes$TOPONIMIA
+summary(datosfuentes.nb)
+```
+
+
+## Librerias necesarias para los analisis 
+
+### Vecinos
+
+
+```{r}
+datosfuentes.sp <- as_Spatial(datosfuentes)
+plot(datosfuentes.sp, border="grey", lwd=0.5)
+plot(datosfuentes.nb, coordinates(datosfuentes.sp), add=T)
+```
+
+* En el análisis de vecinos más cercanos, JUAN DE HERRERA  tiene un solo vecino y el que más tiene es la VEGA con 14 vecinos
+
+### Pesos Espaciales
+
+* Los pesos que es la función para generar pesos en R utiliza el estilo denominado weighted o “W”, se le asigno pesos usando criterios que elegimos en función de nuestro conocimiento del fenómeno analizado.
+
+```{r}
+datosfuentes.w.W <- nb2listw( datosfuentes.nb)
+datosfuentes.w.W
+```
+
+## EDA para la Variable seleccionada
+
+```{r}
+coordsxy <- datosfuentes %>%
+  st_centroid() %>% 
+  mutate("Pct Sabe leer y escribir: No sabe leer ni escribir"=`Sabe leer y escribir: No sabe leer ni escribir`/(`Población total`)*100,
+         "Pct Sabe leer y escribir: No sabe leer ni escribir log"= log(`Pct Sabe leer y escribir: No sabe leer ni escribir`),
+         x=unlist(map(geom,1)),
+         y=unlist(map(geom,2))) %>%
+  st_drop_geometry()
+datosfuentes_sf <- datosfuentes %>%
+  inner_join(coordsxy, by = 'TOPONIMIA') %>% 
+  dplyr::select(matches('^Pct.*'), x, y, TOPONIMIA)
+
+```
+
+## EDA para No sabe leer ni escribir
+
+```{r}
+p1 <- tm_shape(datosfuentes_sf) +
+  tm_fill(col = "Pct Sabe leer y escribir: No sabe leer ni escribir", style = 'jenks', palette = brewer.pal(9, name = 'Reds')) +
+  tm_borders(lwd = 0.5)
+p2 <- tm_shape(datosfuentes_sf) +
+  tm_fill(col = "Pct Sabe leer y escribir: No sabe leer ni escribir log", style = 'jenks',
+          palette = brewer.pal(9, name = 'Reds'), midpoint = NA) +
+  tm_borders(lwd = 0.5)
+tmap_arrange(p1, p2)
+
+```
+
+* Según el análisis  exploratorio de los datos podemos ver en el mapa de la variable original que hay 54 municipios con aproximadamente 15%  de personas que no saben leer ni escribir, 42 con un aproximado de 20% de personas que no sabe leer ni escribir, 34 municipios con un aproximado de 24% de personas que no sabe leer ni escribir, 20 municipios de aproximadamente 29% de personas que no sabe leer ni escribir y 6 de los municipios tiene un 37% con un alto porcentaje que no sabe leer ni escribir.
+
+* En el análisis exploratorio de los datos podemos ver en el mapa de la variable logarítmica que hay 24 municipios con aproximadamente 3% de personas que no saben leer ni escribir, 51 municipios con un aproximado de 3% de personas que no sabe leer ni escribir, 48 municipios con un aproximado de 3% de personas que no sabe leer ni escribir, 27 municipios con aproximadamente 3% de las personas no sabe leer ni escribir y 5 municipios de aproximadamente 4% de las personas no sabe leer ni escribir
+
+
+
+ 
+
+### Crear Diagrama Cuantilar Normal
+
+```{r}
+ datosfuentes_sf %>% st_drop_geometry() %>%
+  gather(variable, valor, -(x:TOPONIMIA)) %>%
+  ggplot() + aes(sample=valor) +
+  stat_qq() + stat_qq_line() + theme_bw() +
+  theme(text = element_text(size = 14)) +
+  facet_wrap(~variable, scales = 'free')
+```
+
+* Según el diagrama cuantilar normal, la gráfica logarítmica presenta más normalidad en los datos, ya que se asemeja más a una línea recta
+
+
+### Prueba de Shapiro-Wilk
+
+```{r}
+datosfuentes_sf %>% st_drop_geometry() %>%
+  gather(variable, valor, -(x:TOPONIMIA)) %>% group_by(variable) %>%
+  summarise(prueba_normalidad=shapiro.test(valor)$p.value)
+```
+
+* Para la prueba de Shapiro-Wilk al menos los datos transformados, sí cumplen en principio con el supuesto de normalidad.
+
+
+### Comprobacion de Homocedasticidad
+
+```{r}
+datosfuentes_sf %>% lm(`Pct Sabe leer y escribir: No sabe leer ni escribir log`~ x, .) %>% plot(3)
+datosfuentes_sf %>% lm(`Pct Sabe leer y escribir: No sabe leer ni escribir log`~ y, .) %>% plot(3)
+datosfuentes_sf %>% lm(`Pct Sabe leer y escribir: No sabe leer ni escribir log`~ y, .) %>% bptest()
+datosfuentes_sf %>% lm(`Pct Sabe leer y escribir: No sabe leer ni escribir log`~ x, .) %>% bptest()
+```
+
+* Según la comprobación de homocedasticidad, para la variable respecto de la coordenada Y, tanto grafico como la prueba de homocedasticidad, el resultado obtenido sugiere heterocedasticidad. Pero respecto de X hay homocedasticidad.
+
+## Evaluar la Autocorrelacion Espacial Global
+
+```{r}
+(gmoranw <- moran.test(x = datosfuentes_sf$`Pct Sabe leer y escribir: No sabe leer ni escribir log`, listw = datosfuentes.w.W))
+```
+
+* En esta investigación se rechaza la hipótesis nula, porque el coeficiente de significancia es menor que 0.05
+
+
+## Evaluar la Autocorrelacion Espacial Local 
+
+### Prueba de I Moran Local
+
+```{r}
+moran.plot(x = datosfuentes_sf$`Pct Sabe leer y escribir: No sabe leer ni escribir log`, listw = datosfuentes.w.W)
+```
+
+* En el diagrama de Moran Plot San Rafael del Yuma, tiene un valor de la variable en el eje X de 3.2,  en el eje Y de acuerdo a su vecindad se esperaría de 2.8, San Rafael del Yuma tiene mucha más población que no sabe leer ni escribir, que lo que se esperaría de acuerdo a su entorno, eso se considera un outlayer espacial o un aberración espacial. En San Rafael del Yuma se observó un valor grande, pero se  espera un valor más pequeño.  Duvergé  es un caso contrario, se obtiene un valor de la variable de 2.9, pero de acuerdo a su vecindad, Duvergé se  esperaría es 3.4, se esperaría un analfabetismo grande, pero se obtuvo un valor menor.
+
+
+### Generar Mapa Clusters lisa
+
+
+```{r}
+lisamap(objesp = datosfuentes_sf,
+        var = 'Pct Sabe leer y escribir: No sabe leer ni escribir log',
+        pesos = datosfuentes.w.W,
+        tituloleyenda = 'Significancia\n("x-y", léase\ncomo "x"\nrodeado de "y"',
+        leyenda = T,
+        anchuratitulo = 100,
+        tamanotitulo = 16,
+        fuentedatos = 'ENHOGAR 2017',
+        titulomapa = paste0('Clusters LISA de respuestas a la pregunta:\n"',"Pct Sabe leer y escribir: No sabe leer ni escribir log" , '"'))
+```
+
+* El Mapa LISA Cliusters, nos muestra cuales son los grumos o aglomerados del valor alto de la variable, el valor alto de la variable es el porcentaje de persona que no sabe leer ni escribir, esa variable se comporta de la manera grumosa en 24  municipio, entre estos están: la región Enriquillo en una parte de ella y en esos  municipio y en algunos municipios de la región fronteriza y  también al norte de la provincia de Azua, eso son los aglomerados donde los municipios de ese  grumo se parecen a su entorno en cuanto a esa variable, es decir Pedernales se parece a Oviedo, Oviedo se parece a Paraíso, entre sí en cuanto al valor de la variable, es decir están autocorrelacionado espacialmente en cuanto a esa variable. En 23 municipios pasa el efecto contrario estos municipios están autorrelacionado entre sí pero con bajo valor de la variable, la variable tiene un bajo valor en Santo Domingo, San Cristóbal, Santo Domingo Norte, entre otros. Existen Dos grumos de bajo valor de las variables y tres grumos de alto valor de las variables. En el recto como no se parece entre sí, no hay una autocorrelacion espacial entre ellos, no hay una auotcorrelacion significativa y por eso se ponen todos de color gris.
+
+
+
+## Modelización de datos espaciales
+
+### Selección de variables
+
+* Dentro del proyecto de investigación voy a trabajar con la modelización de datos espaciales para ello esta, el grado de asociación de diferentes variables, dende se encuentra la principal como "sabe leer y escribir: No sabe leer ni escribir". 
+
+* Sabe leer y escribir: No sabe leer ni escribir
+* Población total
+* Tipo de vivienda: Pieza en cuartería o parte atrás
+* Tipo de vivienda: Barracón
+* Edad en grupos quinquenales 0, 1-4, .... 85 y más: 60 - 64
+* Condición Actividad Económica: Trabajador(a) familiar o no familiar sin paga o ganancia
+* Asiste o asistió a la escuela: No asiste, pero asistió
+
+## Cargar Datos
+
+* Vamos hacer las selecciones correspondientes y a las variables le atribuimos nombres cortos, conservando el campo ENLACE y TOPONIMIA: 
+
+```{r}
+alfa <- datosfuentes %>% dplyr::select(
+  ENLACE = ENLACE,
+  TOPONIMIA = TOPONIMIA,
+  POBLA= `Población total`,
+  VICUARTERIA = `Tipo de vivienda: Pieza en cuartería o parte atrás`,
+  VIBARRACON = `Tipo de vivienda: Barracón`,
+  TERCERAEDAD = `Edad en grupos quinquenales 0, 1-4, .... 85 y más: 60 - 64`,
+  TRASINPAGA = `Condición Actividad Económica: Trabajador(a) familiar o no familiar sin paga o ganancia`,
+  ASISTIOESC = `Asiste o asistió a la escuela: No asiste, pero asistió`,
+  ANALFABETISMO= `Sabe leer y escribir: No sabe leer ni escribir`)
+alfa
+```  
+        
+### Relativizar
+
+* Vamos a relativizar todas las columnas numéricas con el campo POBLA, generando así nuevas columnas de porcentaje (nombre de columnas con sufijo _PCT). Al mismo tiempo, obtendremos los logaritmos de la base, de los porcentajes (nombre de columnas con sufijo _PCTLOG).
+
+
+```{r}
+alfapctlog <- alfa %>% mutate_each(
+  funs(PCT=round(./POBLA,4)*100,
+       PCTLOG=log1p(round(./POBLA,4)*100)),
+  -1, -2, -geom, -POBLA)
+alfapctlog
+```
+
+### Modelo Lineal
+
+```{r}
+modlin <- alfapctlog %>% select(contains('_PCTLOG')) %>%
+  st_drop_geometry() %>% lm(ANALFABETISMO_PCTLOG ~ ., .)
+modlin %>% summary
+```
+
+### Modelo Espacial Autorregresivo
+
+#### Modelo con todas Variables
+
+```{r, warning=F, message=F}
+sar <- alfapctlog %>% select(contains('_PCTLOG')) %>%
+  st_drop_geometry() %>%
+  spautolm(
+    formula = ANALFABETISMO_PCTLOG ~ .,
+    data = .,
+    listw = datosfuentes.w.W)
+summary(sar)
+```
+
+* En los casos de las variables, Tipo de vivienda: Barracón`, `Edad en grupos quinquenales 0, 1-4,.... 85 y más: 60 - 64`,`Asiste o asistió a la escuela: No asiste, pero asistió`, están asociada porque presentan coeficientes significativos y `Tipo de vivienda: Pieza en cuartería o parte atrás`, `Condición Actividad Económica: Trabajador(a) familiar o no familiar sin paga o ganancia`, no están asociado porque presentan coeficiente no significativo.
+
+#### Modelo con Variables cuyo Coeficientes Resultaron Significativo
+ 
+```{r, warning=F, message=F}
+sar2 <- alfapctlog %>% select(contains('_PCTLOG')) %>%
+  st_drop_geometry() %>%
+  spautolm(
+    formula = ANALFABETISMO_PCTLOG ~ TERCERAEDAD_PCTLOG + ASISTIOESC_PCTLOG + VIBARRACON_PCTLOG,
+    data = .,
+   listw = datosfuentes.w.W)
+summary(sar2)
+```
+
+* Dentro del modelo con variable cuyo coeficientes resultaron significativo, la variable del porcentaje de persona que no sabe leer ni escribir, están asociadas con las variables: Edad en grupos quinquenales 0, 1-4,.... 85 y más: 60 - 64 y Tipo de vivienda: Barracón estos son directo y el Asiste o asistió a la escuela: No asiste, pero asistió e inverso porque el coeficiente es negativo.
+
+## Geoestadistica de la Precipitacion del año 2008
+
+* Los primeros que vamos hacer es cargar los observatorios y las provincias. Para una precipitación del año 2008:
+
+
+```{r}
+rutapre <- 'onamet_prec_anual_sf.gpkg'
+rutadiv <- 'divisionRD.gpkg'
+st_layers(rutapre)
+```
+
+### Exploremos el CRS del objeto obs
+
+```{r}
+pre <- st_read(rutapre)
+pre
+```
+
+### Exploracion de capa
+
+
+```{r}
+st_layers(rutadiv)
+```
+
+* Las PROVCenso2010 tienen 32 fila y 4 campos, mientras que el MUNCenso2010 tiene 155 fila y 5 campos, en los REGCenso2010 tienen 10 fila y 2 campos.
+
+### Capa provincia
+
+```{r}
+prov <- st_read(rutadiv, layer = 'PROVCenso2010')
+prov
+
+```
+
+
+### CRS del objeto observado
+
+```{r}
+st_crs(pre)
+```
+
+
+### Transformemos a 32619:
+
+```{r}
+crsdestino <- 32619
+preutm <- pre %>% st_transform(crs = crsdestino)
+preutm
+```
+
+## EDA básico
+
+### Estadísticos Básicos para el año 2008
+
+```{r}
+nrow(preutm)
+summary(preutm$a2008)
+```
+* Según los Estadísticos Básicos para el año 2008, la tabla tiene 25 fila, con un mínimo de 560.5 milímetros, con una media de 1513.5 milímetros y un máximo de 2376.0 milímetros y en al menos en 1 hay datos perdido (NA).
+
+### Histogramas Normal
+
+
+```{r}
+hist(preutm$a2008)
+```
+* Según el histograma normal, los datos presentan una distribución normal.
+
+### Histogramas Logaritmica
+
+```{r}
+hist(log(preutm$a2008))
+```
+* Según este histograma logarítmico, los datos tienen una distribución poco normal, porque para la derecha presenta la mayor cantidad de datos.  
+
+
+
+## Prueba de Shapiro-Wilk Normal
+
+```{r}
+shapiro.test(preutm$a2008)
+```
+
+* Según la prueba de Shapiro-Wilk Normal, el coeficiente significancia es mayor que 0.05 por tanto se acepta la hipótesis nula. 
+
+
+### Prueba de Shapiro-Wilk Transformado
+
+```{r}
+shapiro.test(log(pre$a2008))
+```
+
+* Según la prueba de Shapiro-Wilk, en la variable logarítmica el coeficiente de significancia es mayor que 0.05 por tanto se acepta la  hipótesis nula, los datos vienen de una distribución normalmente distribuida.
+
+
+## Precipitación del año 2008
+
+```{r}
+pre2008 <- na.omit(preutm[,c('Estación', 'a2008')])
+pre2008
+```
+
+## Representacion de la Precipitación del año 2008
+
+```{r}
+library(ggplot2)
+ggplot() +
+  geom_sf(data = prov, fill = 'white') +
+  geom_sf(data = pre2008, aes(col = a2008), size = 6) +
+  scale_colour_gradient(low="#deebf7", high="#3182bd") +
+  geom_sf_text(data = prov, aes(label=TOPONIMIA), check_overlap = T, size = 2) +
+  geom_sf_text(data = pre2008, aes(label=Estación), check_overlap = T, size = 1.5) +
+  theme_bw()
+```
+
+* Los valore de máximas precipitación están en los pluviómetros centrales y que tienen acceso a en  los vientos alisios, las  provincias como: Sánchez Ramírez, Monte Plata, María Trinidad Sánchez, Santo Domingo, Distrito Nacional San José de Ocoa, Hermanas Mirabal, San Cristóbal, Duarte, Semana, Barahona en (Polo) y Monseñor Noel. Donde hubo mediana precipitación es el Seíbo, Hato Mayor, La Romana, La Altagracia, Pedernales, Puerto Plata, Elia Piña, San Juan, Santiago y Santiago Rodríguez. En las demás provincias se evidencia baja precipitación.
+
+## Variograma muestral
+
+* Se Genera el variograma muestral para el logaritmo de la precipitación. Para esto se emplea la función variogram
+
+```{r}
+v2008 <- variogram(a2008~1, pre2008)
+v2008
+plot(v2008, plot.numbers = T)
+```
+
+
+### Variograma Esferico
+
+* Con el variograma muestral, se genera un variograma modelo que será el que se utlizará en la función krige para realizar la interpolación. 
+
+
+```{r}
+v2008_m <- fit.variogram(v2008, vgm(model = "Sph", range = 50000))
+v2008_m
+plot(v2008, v2008_m, plot.numbers = T)
+
+```
+
+###  Variograma modelo 2 (Exponencial)
+
+
+```{r}
+v2008_m2 <- fit.variogram(v2008, vgm(model = "Exp", range = 50000))
+v2008_m2
+plot(v2008, v2008_m2, plot.numbers = T)
+```
+
+### Variograma modelo 3 (Gaussiano)
+
+
+```{r}
+v2008_m3 <- fit.variogram(v2008, vgm(model = "Gau", range = 50000))
+v2008_m3
+plot(v2008, v2008_m3, plot.numbers = T)
+```
+
+* De acuerdo a la representación gráfica de los diferentes Variogramas, el modelo que mejor se ajusta a los datos es el modelo Exponencial. Por lo que este será el usado para el procesado de los datos.
+
+
+## Interpolación por Kriging Ordinario
+
+* Antes de realizar la interpolación, necesitamos una cuadrícula que “llenaremos” con las predicciones. Creamos una cuadrícula para RD, en este caso, de baja resolución, 10x10 km, esta cuadricula la vamos a crear con la libreria (stars)
+
+
+```{r}
+grd <- st_bbox(prov) %>%
+  st_as_stars(dx = 10000) %>% #10000 metros=1km de resolución espacial
+  st_set_crs(crsdestino) %>%
+  st_crop(prov)
+grd
+plot(grd)
+```
+
+### Interpolacion Kriging
+
+
+```{r}
+k <- krige(formula = a2008~1, locations = pre2008, newdata = grd, model = v2008_m2)
+k
+plot(k)
+```
+
+### Usar ggplot para representar el objeto stars.
+
+```{r}
+ggplot() +
+  geom_stars(data = k, aes(fill = var1.pred, x = x, y = y)) + 
+  scale_fill_gradient(low="#deebf7", high="#3182bd") +
+  geom_sf(data = st_cast(prov, "MULTILINESTRING")) +
+  geom_sf(data = pre2008) +
+  geom_sf_text(data = prov, aes(label=TOPONIMIA), check_overlap = T, size = 2, nudge_=500) +
+  theme_bw()
+```
+
+* Según el mapa, las provincias donde se evidencian que hubo mayores Precipitaciones son: Sánchez Ramírez, Monte Plata, María Trinidad Sánchez, Santo Domingo, Distrito Nacional San José de Ocoa, Hermanas Mirabal, San Cristóbal, Duarte, Semana, Barahona y Monseñor Noel. Donde hubo mediana precipitación es el Seíbo, Hato Mayor, La Romana, La Altagracia, Pedernales, Puerto Plata, Elia Piña, San Juan, Santiago y Santiago Rodríguez. En las demás provincias se evidencia baja precipitación.
+
 
 # Referencias
+
+

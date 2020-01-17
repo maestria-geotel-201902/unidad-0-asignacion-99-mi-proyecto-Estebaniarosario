@@ -1,0 +1,263 @@
+---
+# output: github_document
+output: 
+  pdf_document:
+    keep_tex: true
+    fig_caption: true
+    latex_engine: pdflatex
+    template: svm-latex-ms.tex
+    number_sections: true
+title: | 
+        | Mi proyecto
+        | Subtítulo
+        | Subtítulo
+author:
+- name: Tali tali tali
+  affiliation: Estudiante, Universidad Autónoma de Santo Domingo (UASD)
+abstract: "Mi resumen"
+keywords: "palabra clave 1, palabra clave 2"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontfamily: mathpazo
+fontsize: 11pt
+# spacing: double
+bibliography: bibliography.bib
+# csl: plos-one.csl
+csl: apa.csl
+header-includes:
+  \usepackage{pdflscape}
+  \newcommand{\blandscape}{\begin{landscape}}
+  \newcommand{\elandscape}{\end{landscape}}
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+
+# Introducción
+
+¿Cuál es patrón de distribución que presentan las cuarenta y cuatro (44) Bancas de Loterías y de Apuestas Deportivas en el Sector de Villa Consuelo (agregado, aleatorio, uniforme)?
+
+# Metodología
+
+\ldots
+
+# Resultados
+
+
+
+\ldots
+
+# Discusión o Conclusiones
+
+\ldots
+
+# Información de soporte
+
+\ldots
+
+# *Script* reproducible
+
+## Librerias necesarias para los analisis 
+
+```{r, warning=FALSE, message=FALSE}
+library(spdep)
+library(tidyverse)
+library(sf)
+library(lmtest)#Necesario para la función bptest, que evalúa homocedasticidad
+library(tmap)
+library(RColorBrewer)
+library(knitr)
+library(stars)
+```
+
+## Cargar datos
+
+```{r}
+d1 <- read.csv('Tabla de Bancas de Loterias y  Deportivas.csv', 
+               sep = ';', encoding = 'latin1', check.names = F)
+d1 %>% select(NOMBRE, CONSORCIO) %>% kable
+d2 <- read.csv('Fichas de Bancas de Loterias y de Apuestas Deportiva.csv',
+               sep = ';', encoding = 'latin1', check.names = F)
+
+d2 %>% select(NOMBRE, `CONDICIONES DE ACCESIBILIDAD VIAL (BUENA O MALA)`) %>% kable
+d3 <- read.csv('centros educativos.csv', sep = ';',
+               encoding = 'latin1', check.names = F)
+d3 %>% select(NOMBREDELCENTROEDUTACTIVO, DIRECCION) %>% kable
+```
+
+## Análisis EDA
+
+### EDA para Bancas
+
+```{r}
+summary(d1$`TIPO DE BANCA`)
+summary(d1$`PROMEDIO DE CLIENTES/ DIAS`)
+summary(d1$`NUMERO DE EMPLEADOS`)
+table(d1$`NUMERO DE EMPLEADOS`)
+summary(d1$`CANTIDAD DE MAQUINAS`)
+summary(d1$CONSORCIO)
+#Puedes analizar también a d2, que son las fichas
+```
+
+### EDA para fichas
+
+```{r}
+#Reorganizacion d2
+d2 <- d2 %>%
+  rename(
+    `QUINIELA PRIMER LUGAR BANCA`=`PRIMER LUGAR ($RD)  1`,
+    `QUINIELA PRIMER LUGAR LOTEKA`=`PRIMER LUGAR ($RD) 4`,
+    `QUINIELA PRIMER LUGAR LEIDSA`=`PRIMER LUGAR ($RD) 7`,
+    `QUINIELA SEGUNDO LUGAR BANCA`=`SEGUNDO LUGAR ($RD) 2`,
+    `QUINIELA SEGUNDO LUGAR LOTEKA`=`SEGUNDO LUGAR ($RD) 5`,
+    `QUINIELA SEGUNDO LUGAR LEIDSA`=`SEGUNDO LUGAR ($RD) 8`,
+    `QUINIELA TERCER LUGAR BANCA`=`TERCER LUGAR ($RD) 3`,
+    `QUINIELA TERCER LUGAR LOTEKA`=`TERCER LUGAR ($RD) 6`,
+    `QUINIELA TERCER LUGAR LEIDSA`=`TERCER LUGAR ($RD) 9`,
+    `PALE PRIMER Y SEGUNDO LUGARES BANCA`=`Primer y Segundo lugar ($RD)10`,
+    `PALE PRIMER Y SEGUNDO LUGARES LOTEKA`=`Primer y Segundo lugar ($RD)13`,
+    `PALE PRIMER Y SEGUNDO LUGARES LEIDSA`=`Primer y Segundo lugar ($RD)16`,
+    `PALE PRIMER Y TERCER LUGARES BANCA`=`Primer y Tercer lugar ($RD)11`,
+    `PALE PRIMER Y TERCER LUGARES LOTEKA`=`Primer y Tercer lugar ($RD)14`,
+    `PALE PRIMER Y TERCER LUGARES LEIDSA`=`Primer y Tercer lugar ($RD)17`,
+    `PALE SEGUNDO Y TERCER LUGARES BANCA`=`Segundo Y  Tercer lugar($RD) 12`,
+    `PALE SEGUNDO Y TERCER LUGARES LOTEKA`=`Segundo Y  Tercer lugar($RD 15`,
+    `PALE SEGUNDO Y TERCER LUGARES LEIDSA`=`Segundo Y  Tercer lugar($RD18`,
+    `TRIPLETA PRIMER, SEGUNDO Y TERCER LUGARES BANCA`=`Primer, Segundo y Tercer lugar ($RD)19`,
+    `TRIPLETA PRIMER, SEGUNDO Y TERCER LUGARES LOTEKA`=`Primer, Segundo y Tercer lugar ($RD)22`,
+    `TRIPLETA PRIMER Y SEGUNDO LUGARES BANCA`=`Primer y Segundo lugar ($RD)20`,
+    `TRIPLETA PRIMER Y SEGUNDO LUGARES LOTEKA`=`Primer y Segundo lugar ($RD)23`,
+    `TRIPLETA SEGUNDO Y TERCER LUGARES BANCA`=`Segundo Y  Tercer lugar($RD)21`,
+    `TRIPLETA SEGUNDO Y TERCER LUGARES LOTEKA`=`Segundo Y  Tercer lugar($RD)24`)
+d2 <- d2 %>% mutate(ID=paste0(LATITUD, ',', LONGITUD))
+d2reunida <- d2 %>%
+  gather(TIPODEPREMIO, MONTO, `QUINIELA PRIMER LUGAR BANCA`:`TRIPLETA SEGUNDO Y TERCER LUGARES LOTEKA`)
+d2reunida <- d2reunida %>% mutate(NIVELDEPREMIO=
+                       case_when(
+                         grepl('QUINIELA PRIMER LUGAR ', TIPODEPREMIO) ~ 'QUINIELA PRIMER LUGAR',
+                         grepl('QUINIELA SEGUNDO LUGAR ', TIPODEPREMIO) ~ 'QUINIELA SEGUNDO LUGAR',
+                         grepl('QUINIELA TERCER LUGAR ', TIPODEPREMIO) ~ 'QUINIELA TERCER LUGAR',
+                         grepl('PALE PRIMER Y SEGUNDO LUGARES', TIPODEPREMIO) ~ 'PALE PRIMER Y SEGUNDO LUGARES',
+                         grepl('PALE PRIMER Y TERCER LUGARES', TIPODEPREMIO) ~ 'PALE PRIMER Y SEGUNDO LUGARES',
+                         grepl('PALE SEGUNDO Y TERCER LUGARES', TIPODEPREMIO) ~ 'PALE SEGUNDO Y TERCER LUGARES',
+                         grepl('TRIPLETA PRIMER, SEGUNDO Y TERCER LUGARES', TIPODEPREMIO) ~ 'TRIPLETA PRIMER, SEGUNDO Y TERCER LUGARES',
+                         grepl('TRIPLETA PRIMER Y SEGUNDO LUGARES', TIPODEPREMIO) ~ 'TRIPLETA PRIMER Y SEGUNDO LUGARES',
+                         grepl('TRIPLETA SEGUNDO Y TERCER LUGARES', TIPODEPREMIO) ~ 'TRIPLETA SEGUNDO Y TERCER LUGARES'
+                       ),
+                     TIPODELOTERIA=
+                       case_when(
+                         grepl('QUINIELA', TIPODEPREMIO) ~ 'QUINIELA',
+                         grepl('PALE', TIPODEPREMIO) ~ 'PALE',
+                         grepl('TRIPLETA', TIPODEPREMIO) ~ 'TRIPLETA'
+                       ))
+d2reunida %>%
+  select(NOMBRE, NIVELDEPREMIO, MONTO) %>%
+  group_by(NOMBRE, NIVELDEPREMIO) %>%
+  summarise(MEDIA=max(MONTO)) %>%
+  spread(NIVELDEPREMIO, MEDIA) %>% View
+d2reunida %>%
+  select(ID, MONTO) %>%
+  group_by(ID) %>%
+  summarise(MEDIA=mean(MONTO)) %>% View
+```
+
+## Generar objeto espacial desde los datos
+
+```{r}
+#sf de d1
+crsdestino <- 32619
+d1_sf <- d1 %>% st_as_sf(coords = c('LONGITUD', 'LATITUD'), crs = 4326)
+d1_sf_utm <- d1_sf %>% st_transform(crs = crsdestino)
+plot(d1_sf_utm, max.plot=16)
+
+#sf de d1
+#Dado que d2 no tiene varianzas por niveles de premio, no aporta nada representar dicha variable en mapas, ni analizarla espacialmente
+# crsdestino <- 32619
+# d2_sf <- d2 %>% st_as_sf(coords = c('LONGITUD', 'LATITUD'), crs = 4326)
+# d2_sf_utm <- d2_sf %>% st_transform(crs = crsdestino)
+# plot(d2_sf_utm, max.plot=16)
+
+#sf de d3
+d3_sf <- d3 %>% st_as_sf(coords = c('LONGITUD', 'LATITUD'), crs = 4326)
+d3_sf_utm <- d3_sf %>% st_transform(crs = crsdestino)
+plot(d3_sf_utm, max.plot=16)
+```
+
+## Plot con base OpenStreetMap
+
+```{r}
+mapaconosm <-   tm_shape(d3_sf_utm) + 
+  tm_dots(col = 'black', size = 2) +
+  tm_text(text = 'NOMBREDELCENTROEDUTACTIVO', size = 0.8) +
+  tm_shape(d1_sf_utm) +
+  tm_dots(col = 'NUMERO DE EMPLEADOS', size = 'NUMERO DE EMPLEADOS') +
+  tm_text(text = 'NOMBRE', size = 0.8) +
+  tm_basemap(server = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+mapaconosm
+
+```
+
+
+## Crear cuadrícula
+
+```{r}
+grd <- st_bbox(d1_sf_utm) %>%
+  st_as_stars(dx = 100) %>%
+  st_set_crs(crsdestino)
+grd
+grd_sf <- st_as_sf(grd)
+```
+
+## Rellenar cuadrícula
+
+```{r}
+grd_sf_conteo <- aggregate(d1_sf_utm %>% select(NUMERODEBANCAS=NOMBRE), grd_sf, FUN = 'length')
+grd_sf_conteo <- grd_sf_conteo %>%
+  mutate(NUMERODEBANCAS=ifelse(is.na(NUMERODEBANCAS),0,NUMERODEBANCAS))
+mapaconteo <- tm_shape(grd_sf_conteo) +
+    tm_fill(col = 'NUMERODEBANCAS') +
+  tm_basemap(server = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+mapaconteo
+```
+
+
+## Vecindad y autocorrelación
+
+### Vecindad
+
+
+```{r}
+pnb <- poly2nb(grd_sf_conteo)
+plot(pnb, coords = coordinates(as_Spatial(grd_sf_conteo)))
+knb <- knn2nb(knearneigh(d1_sf_utm, k = 5))
+plot(knb, coords = coordinates(as_Spatial(d1_sf_utm)))
+
+```
+
+### Pesos Espaciales
+
+
+```{r}
+pnb.w.W <- nb2listw(pnb)
+pnb.w.W
+knb.w.W <- nb2listw(knb)
+knb.w.W
+```
+
+### Autocorrelacion
+
+
+```{r}
+grd_sf_conteo %>% st_drop_geometry() %>%
+ ggplot() + aes(sample=NUMERODEBANCAS) +
+  stat_qq() + stat_qq_line() + theme_bw() +
+  theme(text = element_text(size = 14)) +
+  facet_wrap(~variable, scales = 'free')
+```
+
+
+
+
+# Referencias
